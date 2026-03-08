@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRYPTEX // Crypto AI Analyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0c1020;
+    --surface2: #111827;
+    --border: #1e2a40;
+    --accent: #00f5c4;
+    --accent2: #ff3b6b;
+    --accent3: #7b61ff;
+    --text: #e2e8f0;
+    --muted: #4a5568;
+    --gold: #f6c90e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,196,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,196,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glowing orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(123,97,255,0.08) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,245,196,0.4);
+  }
+
+  .logo span {
+    color: var(--accent2);
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  /* Input section */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .input-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2));
+  }
+
+  .input-label {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .pair-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 1.1rem;
+    padding: 12px 16px;
+    border-radius: 3px;
+    outline: none;
+    text-transform: uppercase;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    letter-spacing: 2px;
+  }
+
+  .pair-input::placeholder { color: var(--muted); font-size: 0.85rem; letter-spacing: 1px; }
+  .pair-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,245,196,0.1);
+  }
+
+  .quick-pairs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .quick-pair {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+
+  .quick-pair:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,245,196,0.05);
+  }
+
+  .analyze-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 3px;
+    padding: 12px 28px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .analyze-btn:hover {
+    background: #00ffd0;
+    box-shadow: 0 0 20px rgba(0,245,196,0.3);
+    transform: translateY(-1px);
+  }
+
+  .analyze-btn:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .loading.active { display: block; }
+
+  .loading-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    margin: 20px auto;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 1px;
+    animation: load 2s ease-in-out infinite;
+  }
+
+  @keyframes load {
+    0% { width: 0%; margin-left: 0%; }
+    50% { width: 70%; margin-left: 15%; }
+    100% { width: 0%; margin-left: 100%; }
+  }
+
+  .loading-text {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Result */
+  #result {
+    display: none;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  #result.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Report styling */
+  .report-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .report-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent3), var(--accent));
+  }
+
+  .report-pair {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+  }
+
+  .report-ts {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .bias-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    padding: 6px 16px;
+    border-radius: 2px;
+  }
+
+  .bias-bull { background: rgba(0,245,196,0.15); color: var(--accent); border: 1px solid rgba(0,245,196,0.3); }
+  .bias-bear { background: rgba(255,59,107,0.15); color: var(--accent2); border: 1px solid rgba(255,59,107,0.3); }
+  .bias-neutral { background: rgba(246,201,14,0.15); color: var(--gold); border: 1px solid rgba(246,201,14,0.3); }
+
+  /* Markdown rendered output */
+  .report-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 28px;
+    line-height: 1.8;
+    font-size: 0.82rem;
+  }
+
+  .report-body h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .report-body h3:first-child { margin-top: 0; }
+
+  .report-body p {
+    color: #cbd5e1;
+    margin-bottom: 10px;
+    font-size: 0.82rem;
+  }
+
+  .report-body strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .report-body ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  .report-body ul li {
+    color: #94a3b8;
+    padding: 3px 0 3px 16px;
+    position: relative;
+    font-size: 0.81rem;
+  }
+
+  .report-body ul li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .report-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 0.78rem;
+  }
+
+  .report-body th {
+    background: rgba(0,245,196,0.06);
+    color: var(--accent);
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+
+  .report-body td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    color: #94a3b8;
+    vertical-align: top;
+  }
+
+  .report-body tr:nth-child(even) td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .report-body blockquote {
+    border-left: 3px solid var(--accent3);
+    padding: 10px 16px;
+    margin: 12px 0;
+    background: rgba(123,97,255,0.06);
+    color: #94a3b8;
+    font-style: italic;
+  }
+
+  .report-body hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  /* Emoji section headers look great already */
+
+  .disclaimer {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(246,201,14,0.05);
+    border: 1px solid rgba(246,201,14,0.15);
+    border-radius: 3px;
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+  }
+
+  .disclaimer strong { color: var(--gold); }
+
+  /* Error */
+  .error-box {
+    background: rgba(255,59,107,0.08);
+    border: 1px solid rgba(255,59,107,0.25);
+    border-radius: 3px;
+    padding: 16px 20px;
+    color: var(--accent2);
+    font-size: 0.8rem;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">APEX<span>//</span>AI</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:0.65rem;color:var(--muted);letter-spacing:2px;">
+      <div class="status-dot"></div>
+      LIVE ANALYST
+    </div>
+  </header>
+
+  <div class="input-section">
+    <div class="input-label">// Trading Pair Analysis</div>
+    <div class="input-row">
+      <input
+        class="pair-input"
+        id="pairInput"
+        type="text"
+        placeholder="BTC/USDT, ETH/USDT, SOL..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">
+        ANALYZE
+      </button>
+    </div>
+    <div class="quick-pairs">
+      <span style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;align-self:center;">QUICK:</span>
+      <button class="quick-pair" onclick="setAndRun('BTC/USDT')">BTC/USDT</button>
+      <button class="quick-pair" onclick="setAndRun('ETH/USDT')">ETH/USDT</button>
+      <button class="quick-pair" onclick="setAndRun('SOL/USDT')">SOL/USDT</button>
+      <button class="quick-pair" onclick="setAndRun('BNB/USDT')">BNB/USDT</button>
+      <button class="quick-pair" onclick="setAndRun('XRP/USDT')">XRP/USDT</button>
+      <button class="quick-pair" onclick="setAndRun('DOGE/USDT')">DOGE/USDT</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div style="font-size:0.65rem;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:4px;">APEX AI</div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    <div class="loading-text" id="loadingText">Fetching market data...</div>
+  </div>
+
+  <div id="result"></div>
+
+</div>
+
+<script>
+  function setAndRun(pair) {
+    document.getElementById('pairInput').value = pair;
+    runAnalysis();
+  }
+
+  document.getElementById('pairInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runAnalysis();
+  });
+
+  const loadingMessages = [
+    'Fetching market data...',
+    'Scanning order blocks...',
+    'Mapping Smart Money Concepts...',
+    'Running multi-timeframe analysis...',
+    'Calculating entry zones...',
+    'Generating trade setups...',
+    'Building your report...',
+  ];
+
+  let loadingInterval;
+
+  function startLoadingCycle() {
+    let i = 0;
+    const el = document.getElementById('loadingText');
+    el.textContent = loadingMessages[0];
+    loadingInterval = setInterval(() => {
+      i = (i + 1) % loadingMessages.length;
+      el.textContent = loadingMessages[i];
+    }, 1800);
+  }
+
+  function stopLoadingCycle() {
+    clearInterval(loadingInterval);
+  }
+
+  function extractBias(text) {
+    const lower = text.toLowerCase();
+    const bullCount = (lower.match(/\bbullish\b/g) || []).length;
+    const bearCount = (lower.match(/\bbearish\b/g) || []).length;
+    if (bullCount > bearCount + 1) return 'BULLISH';
+    if (bearCount > bullCount + 1) return 'BEARISH';
+    return 'NEUTRAL';
+  }
+
+  function getBiasClass(bias) {
+    if (bias === 'BULLISH') return 'bias-bull';
+    if (bias === 'BEARISH') return 'bias-bear';
+    return 'bias-neutral';
+  }
+
+  // Simple markdown to HTML parser
+  function mdToHtml(md) {
+    let html = md;
+
+    // Tables
+    html = html.replace(/\|(.+)\|\n\|[-| ]+\|\n((?:\|.+\|\n?)*)/g, (match, header, rows) => {
+      const ths = header.split('|').filter(c => c.trim()).map(c => `<th>${c.trim()}</th>`).join('');
+      const trs = rows.trim().split('\n').map(row => {
+        const tds = row.split('|').filter(c => c.trim() !== undefined && row.includes('|'))
+          .filter((_, i, a) => i > 0 && i < a.length - 0)
+          .map(c => `<td>${c.trim()}</td>`).join('');
+        return `<tr>${tds}</tr>`;
+      }).join('');
+      return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+    });
+
+    // H3
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    // H2
+    html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+    // Bold
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // HR
+    html = html.replace(/^---$/gm, '<hr>');
+    // Blockquote
+    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // Unordered list
+    html = html.replace(/((?:^[-*] .+\n?)+)/gm, (block) => {
+      const items = block.trim().split('\n').map(l => `<li>${l.replace(/^[-*] /, '').trim()}</li>`).join('');
+      return `<ul>${items}</ul>`;
+    });
+    // Paragraphs (non-tag lines)
+    html = html.replace(/^(?!<[a-z])(.+)$/gm, (line) => {
+      if (!line.trim()) return '';
+      return `<p>${line}</p>`;
+    });
+
+    return html;
+  }
+
+  async function runAnalysis() {
+    const pair = document.getElementById('pairInput').value.trim().toUpperCase();
+    if (!pair) return;
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('result').classList.remove('active');
+    document.getElementById('result').innerHTML = '';
+    startLoadingCycle();
+
+    const systemPrompt = `You are APEX AI — a professional cryptocurrency analyst specializing in Binance markets. You deliver comprehensive, precise, actionable analysis using Smart Money Concepts and multi-timeframe technical analysis.
+
+When analyzing a trading pair, follow this EXACT structure:
+
+### 📊 Market Context
+- Current Price (estimate based on your knowledge or note it's approximate), 24h change estimate
+- Trading pair confirmation
+- Overall Market Bias: Bullish / Bearish / Sideways — with one-line rationale
+
+### 🏗️ Market Structure (SMC)
+- Swing points: HH, HL, LH, LL on H1 and H4
+- Trend strength: BOS and CHoCH observations
+- Order Blocks: recent bullish and bearish OBs
+- Fair Value Gaps: significant imbalances
+- CRT: daily/weekly range highs/lows
+
+### 🔑 Key Levels
+Present as a markdown table with columns: Level Type | Price | Notes
+
+### 📈 Technical Indicators
+Present as a markdown table: Indicator | Value/Status | Signal
+Include: EMA 20, EMA 50, EMA 200, RSI(14), MACD(12,26,9), Volume
+For each, state the implication clearly.
+
+### 🎯 Price Scenarios
+Three scenarios with probability labels:
+🟢 Bullish Scenario (probability)
+- Trigger, Target 1, Target 2, Target 3
+
+🔴 Bearish Scenario (probability)
+- Trigger, Target 1, Target 2, Target 3
+
+🟡 Sideways Scenario (probability)
+- Range boundaries, next catalyst
+
+### 🕯️ Pattern Confirmations
+Only if clearly present: candlestick patterns, chart patterns, multi-TF alignment.
+
+### 📰 Fundamental & Sentiment
+Recent news, market sentiment summary, Fear & Greed estimate.
+
+### ✅ Trade Setup
+Overall Bias statement.
+Present Long and Short setups as a table: Setup | Long | Short
+Rows: Entry Zone, Stop Loss, TP1, TP2, TP3, Risk/Reward
+
+Key Invalidation level.
+2-3 sentence summary of highest-probability direction.
+
+---
+
+Be direct, specific with price levels, and professional. Use current knowledge of the asset's historical behavior, typical ranges, and market dynamics. Provide realistic price levels even if approximate. Never be vague.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [
+            {
+              role: "user",
+              content: `Perform a full professional analysis on ${pair} (Binance). Today's date is ${new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}. Give specific, actionable price levels and clear trade setups.`
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      stopLoadingCycle();
+      document.getElementById('loading').classList.remove('active');
+
+      if (data.content && data.content[0] && data.content[0].text) {
+        const text = data.content[0].text;
+        const bias = extractBias(text);
+        const biasClass = getBiasClass(bias);
+        const now = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+        document.getElementById('result').innerHTML = `
+          <div class="report-header">
+            <div>
+              <div class="report-pair">${pair}</div>
+              <div class="report-ts">// ANALYSIS // ${now} UTC+7</div>
+            </div>
+            <div class="bias-badge ${biasClass}">${bias}</div>
+          </div>
+          <div class="report-body">${mdToHtml(text)}</div>
+          <div class="disclaimer">
+            <strong>⚠️ DISCLAIMER:</strong> This analysis is generated by AI for educational and informational purposes only. It does not constitute financial advice. Cryptocurrency trading involves significant risk of loss. Always do your own research and never trade more than you can afford to lose.
+          </div>
+        `;
+        document.getElementById('result').classList.add('active');
+      } else {
+        throw new Error(data.error?.message || 'Unexpected API response');
+      }
+    } catch (err) {
+      stopLoadingCycle();
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('result').innerHTML = `
+        <div class="error-box">
+          ⚠ Analysis failed: ${err.message}<br>
+          <span style="opacity:0.6;font-size:0.75em;">Check your connection and try again.</span>
+        </div>
+      `;
+      document.getElementById('result').classList.add('active');
+    }
+
+    btn.disabled = false;
+  }
+</script>
+</body>
+</html>
